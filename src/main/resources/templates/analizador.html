@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Analizador JFlex y CUP con Spring Boot MVC</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; }
+        h1 { color: #333; }
+        form { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        textarea { width: 100%; height: 200px; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; resize: vertical; box-sizing: border-box; } /* Añadido box-sizing */
+        button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #0056b3; }
+        .resultado { margin-top: 20px; padding: 15px; border-radius: 8px; background-color: #e9ecef; border: 1px solid #ced4da; white-space: pre-wrap; font-family: monospace; }
+        .lexemas-detallados { margin-top: 20px; padding: 15px; border-radius: 8px; background-color: #f8f9fa; border: 1px solid #dee2e6; white-space: pre-wrap; font-family: monospace; font-size: 0.9em; max-height: 400px; overflow-y: auto; } /* Nueva clase y estilos */
+    </style>
+</head>
+<body>
+    <h1>Analizador Léxico y Sintáctico</h1>
+
+    <form th:action="@{/analizar}" method="post">
+        <label for="codigo">Introduce tu código aquí:</label><br>
+        <textarea id="codigo" name="codigo" th:text="${codigoFuente}"></textarea><br>
+        <button type="submit">Analizar Código</button>
+    </form>
+
+    <div th:if="${resultadoAnalisis != null and resultadoAnalisis.length() > 0}" class="resultado">
+        <h2>Estado del Análisis:</h2>
+        <p th:text="${resultadoAnalisis}"></p>
+    </div>
+
+    <div th:if="${lexemasDetallados != null and lexemasDetallados.length() > 0}" class="lexemas-detallados">
+        <h2>Detalles del Proceso de Análisis:</h2>
+        <pre th:text="${lexemasDetallados}"></pre> </div>
+
+</body>
+</html>

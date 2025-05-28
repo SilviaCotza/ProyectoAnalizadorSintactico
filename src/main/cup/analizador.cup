@@ -1,0 +1,139 @@
+package com.mycompany.proyectoanalizadorsintactico;
+
+import java_cup.runtime.*;
+
+/* --- Terminales (Tokens) --- */
+terminal DEFINE, PRINT, IF, THEN, ELSE, ELSEIF, WHILE, LOOP, FUNCTION, RETURN, END;
+terminal AND, OR, NOT;
+terminal LPAREN, RPAREN;
+terminal PLUS, MINUS, MULT, DIV;
+terminal LT, GT, LE, GE, EQ, NEQ;
+terminal SEMICOLON, COMMA, ASSIGN;
+terminal IDENTIFIER;
+terminal INTEGER_LITERAL;
+terminal DOUBLE_LITERAL;
+terminal STRING_LITERAL;
+terminal TRUE, FALSE;
+terminal INT, DOUBLE, STRING, BOOLEAN;
+terminal ERROR; 
+
+
+/* --- No Terminales --- */
+non terminal program;
+non terminal stmt_list;
+non terminal stmt;
+non terminal expr_list;
+non terminal expr;
+non terminal logical_or_expr, logical_and_expr, logical_not_expr;
+non terminal comparison_expr;
+non terminal arithmetic_expr;
+non terminal term;
+non terminal factor;
+non terminal param_list;
+non terminal else_part;
+non terminal type; /* No terminal para tipos de datos (ahora opcional en FUNCTION) */
+non terminal optional_stmt_list; /* Para permitir bloques de sentencias opcionales (vacíos) */
+non terminal function_call; 
+
+/* --- Precedencia y Asociatividad --- */
+precedence left OR;
+precedence left AND;
+precedence nonassoc EQ, NEQ, LT, LE, GE, GT, GE;
+precedence left PLUS, MINUS;
+precedence left MULT, DIV;
+precedence right NOT;
+
+/* --- Regla de Inicio --- */
+start with program;
+
+/* --- Producciones --- */
+program ::= stmt_list; /* No se espera EOF explícitamente aquí. */
+
+stmt_list ::= stmt_list stmt
+            | stmt
+            ; 
+
+/* Permite una lista de sentencias que puede ser vacía */
+optional_stmt_list ::= stmt_list
+                     | /* empty */
+                     ;
+
+/* Definir el no terminal 'type' para los tipos de datos (usado en DEFINE, etc.) */
+type ::= INT | DOUBLE | STRING | BOOLEAN;
+
+/* Nueva regla para llamadas a funciones */
+function_call ::= IDENTIFIER:id LPAREN expr_list:el RPAREN
+                {: System.out.println("Llamada a función: " + id + ", Args: " + el); RESULT = "call_" + id + "(" + el + ")"; :};
+
+
+stmt ::=
+      DEFINE type:t IDENTIFIER:id ASSIGN expr:e SEMICOLON
+        {: System.out.println("Declaración: Tipo=" + t + ", ID=" + id + ", Valor=" + e); :}
+    | IDENTIFIER:id ASSIGN expr:e SEMICOLON /* Asignación de variable existente */
+        {: System.out.println("Asignación: ID=" + id + ", Valor=" + e); :}
+    | PRINT expr_list:el SEMICOLON
+        {: System.out.println("Print: " + el); :}
+    | IF expr:cond THEN optional_stmt_list:ts else_part:ep END
+        {: System.out.println("If-Then-Else: Cond=" + cond + ", Then Stmts=" + ts + ", Else Part=" + ep); :}
+    | WHILE expr:cond THEN optional_stmt_list:ws END
+        {: System.out.println("While-Loop: Cond=" + cond + ", While Stmts=" + ws); :}
+    | LOOP optional_stmt_list:ls END
+        {: System.out.println("Loop: Loop Stmts=" + ls); :}
+    | FUNCTION IDENTIFIER:id LPAREN param_list:pl RPAREN optional_stmt_list:fs RETURN expr:re SEMICOLON END
+        {: System.out.println("Function: ID=" + id + ", Params=" + pl + ", Func Stmts=" + fs + ", Return=" + re); :}
+    | error:e SEMICOLON /* 'e' se refiere al token de error */
+        {:
+           Symbol s = (Symbol) e;
+           System.err.println("Error de sintaxis: Sentencia inválida en la línea " + (s.left + 1) + ", columna " + (s.right + 1) + ". Token inesperado: '" + s.value + "'. Intentando recuperar.");
+           
+        :}
+        ;
+
+
+else_part ::= ELSE optional_stmt_list:es
+            | ELSEIF expr:cond THEN optional_stmt_list:eis else_part:ep
+            | /* empty */ /* Permite que el 'else' o 'elseif' sean opcionales */
+            ;
+
+param_list ::= param_list:pl COMMA IDENTIFIER:id /* SIN TIPO EN LOS PARÁMETROS */
+             | IDENTIFIER:id
+             | /* empty */ ; /* Permite lista de parámetros vacía */
+
+expr_list ::= expr_list:el COMMA expr:e
+            | expr:e;
+
+expr ::= logical_or_expr:loe;
+
+logical_or_expr ::= logical_or_expr:left OR logical_and_expr:right
+                  | logical_and_expr:lae;
+
+logical_and_expr ::= logical_and_expr:left AND logical_not_expr:right
+                   | logical_not_expr:lne;
+
+logical_not_expr ::= NOT comparison_expr:ce
+                   | comparison_expr:ce;
+
+comparison_expr ::= arithmetic_expr:left LT arithmetic_expr:right
+                  | arithmetic_expr:left GT arithmetic_expr:right
+                  | arithmetic_expr:left LE arithmetic_expr:right
+                  | arithmetic_expr:left GE arithmetic_expr:right
+                  | arithmetic_expr:left EQ arithmetic_expr:right
+                  | arithmetic_expr:left NEQ arithmetic_expr:right
+                  | arithmetic_expr:ae;
+
+arithmetic_expr ::= arithmetic_expr:left PLUS term:right
+                  | arithmetic_expr:left MINUS term:right
+                  | term:t;
+
+term ::= term:left MULT factor:right
+       | term:left DIV factor:right
+       | factor:f;
+
+factor ::= INTEGER_LITERAL:val
+         | DOUBLE_LITERAL:val
+         | STRING_LITERAL:val
+         | TRUE:val
+         | FALSE:val
+         | IDENTIFIER:id
+         | LPAREN expr:e RPAREN
+         | function_call:fc;

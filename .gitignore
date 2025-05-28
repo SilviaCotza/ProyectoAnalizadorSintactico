@@ -1,0 +1,34 @@
+# Maven
+/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/wrapper/maven-wrapper.jar # Si usas Maven Wrapper, no incluyas el jar en el control de versiones, solo el wrapper script
+
+# Spring Boot
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Intellij / NetBeans / VSCode
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+nbproject/
+*.form
+*.log
+.DS_Store
+
+# Docker
+Dockerfile.bak # Si creas backups
+
+# Archivos generados por JFlex/CUP (ya están en target/, pero para mayor seguridad)
+/src/main/jflex/AnalizadorLexico.java # Asegúrate de que no estás versionando archivos generados
+/src/main/cup/parser.java
+/src/main/cup/sym.java
