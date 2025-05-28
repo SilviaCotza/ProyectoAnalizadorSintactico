@@ -43,7 +43,7 @@ COPY --from=builder /app/target/ProyectoAnalizadorSintactico-1.0-SNAPSHOT.jar ap
 EXPOSE 8080
 
 # Comando para ejecutar la aplicación Spring Boot
-ENTRYPOINT ["java", "-jar", "app.jar", "--server.port=$PORT"]
+ENTRYPOINT java -jar app.jar --server.port=$PORT
 
 # Si tu app no se adapta automáticamente al puerto de la variable de entorno PORT, usa:
 # ENTRYPOINT ["java", "-jar", "app.jar", "--server.port=$PORT"]
